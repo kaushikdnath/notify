@@ -1,0 +1,23 @@
+sudo apt install mosquitto mosquitto-clients -y
+
+sudo mosquitto_passwd -c /etc/mosquitto/passwd <username>
+sudo chown mosquitto:mosquitto /etc/mosquitto/passwd
+
+//Create config file /etc/mosquitto/conf.d/default.conf
+//Content ///////////////////////////
+listener 1883 0.0.0.0
+protocol mqtt
+
+listener 9001 0.0.0.0
+protocol websockets
+
+allow_anonymous false
+password_file /etc/mosquitto/passwd
+
+////////////////////////////////////
+sudo systemctl restart mosquitto
+///////////////////////////////////
+
+
+
+docker run -d --name mosquitto_server -p 1883:1883 -p 9001:9001 -v $(pwd)/data:/mosquitto/data -v $(pwd)/log:/mosquitto/log MosquittoServer

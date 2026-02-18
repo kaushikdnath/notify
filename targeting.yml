@@ -1,0 +1,21 @@
+types:
+
+  ALL:
+    description: "All active users"
+    query: "(SELECT 'myphone' as user_id) union (Select 'myphone2' as user_id)"
+    param_source: null
+
+  RANK_GROUP:
+    description: "Users by rank group"
+    query: "SELECT user_id FROM user_ranks WHERE rank_group = ?"
+    param_source: "target"
+
+  OFFICE:
+    description: "Users by office id"
+    query: "SELECT id as user_id FROM users WHERE office_id = ?"
+    param_source: "target"
+
+  UNIT:
+    description: "Users by unit id"
+    query: "SELECT id as user_id FROM users WHERE unit_id = ?"
+    param_source: "target"
