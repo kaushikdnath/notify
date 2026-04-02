@@ -24,8 +24,8 @@ CREATE TABLE `delivery_logs` (
   `metadata` json DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_target_event` (`notification_target_id`,`event_type`),
-  CONSTRAINT `delivery_logs_ibfk_1` FOREIGN KEY (`notification_target_id`) REFERENCES `notifications` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `delivery_logs_ibfk_1` FOREIGN KEY (`notification_target_id`) REFERENCES `notification_targets` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Table structure for table `notification_queue` */
 
@@ -52,9 +52,12 @@ CREATE TABLE `notification_targets` (
   `id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `notification_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `user_id` varchar(300) NOT NULL,
+  `email` varchar(200) DEFAULT NULL,
+  `mobile` varchar(10) DEFAULT NULL,
   `status` enum('PENDING','SENT','DELIVERED','READ','FAILED') DEFAULT 'PENDING',
   `retry_count` int DEFAULT '0',
   `last_attempt_at` timestamp NULL DEFAULT NULL,
+  `external_id` varchar(36) DEFAULT NULL,
   `delivered_at` timestamp NULL DEFAULT NULL,
   `read_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,6 +78,7 @@ CREATE TABLE `notifications` (
   `type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `target` varchar(100) DEFAULT NULL,
   `title` varchar(255) NOT NULL,
+  `message_type` varchar(100) NOT NULL,
   `message` text NOT NULL,
   `payload_json` json DEFAULT NULL,
   `priority` enum('LOW','NORMAL','HIGH','CRITICAL') DEFAULT 'NORMAL',

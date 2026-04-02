@@ -13,9 +13,9 @@ function loadConfig() {
 
 loadConfig();
 
-function getTypeConfig(type) {
-  if (!config || !config.types) return null;
-  return config.types[type];
+function getTargetsConfig(target) {
+  if (!config || !config.targets) return null;
+  return config.targets[target];
 }
 
-module.exports = { getTypeConfig };
+module.exports = { getTargetsConfig };

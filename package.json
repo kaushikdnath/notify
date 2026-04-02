@@ -5,6 +5,8 @@
   "scripts": {
     "worker": "node src/worker.js",
     "notify": "node src/server.js",
+    "worker dev": "nodemon src/worker.js",
+    "notify dev": "nodemon src/server.js",
     "dev": "concurrently \"nodemon src/server.js\" \"nodemon src/worker.js\""
   },
   "keywords": [],
@@ -17,6 +19,7 @@
     "js-yaml": "^4.1.1",
     "mqtt": "^5.15.0",
     "mysql2": "^3.17.1",
+    "resend": "^6.10.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

@@ -3,13 +3,33 @@ const pool = require("../db/pool");
 const config = require("../config");
 const { randomUUID } = require("crypto");
 
-const client = mqtt.connect(config.mqtt.url, {
+function buildBrokerUrl() {
+  const type = process.env.BROKER_TYPE || "tcp";
+
+  const host = process.env.MQTT_HOST;
+  const port = process.env.MQTT_PORT;
+  const useTLS = process.env.MQTT_USE_TLS === "true";
+
+  if (type === "tcp") {
+    return `${useTLS ? "mqtts" : "mqtt"}://${host}:${port}`;
+  }
+
+  if (type === "ws") {
+    const path = process.env.MQTT_WS_PATH || "/mqtt";
+    return `${useTLS ? "wss" : "ws"}://${host}:${port}${path}`;
+  }
+
+  throw new Error("Invalid BROKER_TYPE. Use 'tcp' or 'ws'");
+}
+
+const client = mqtt.connect(buildBrokerUrl(), {
   clientId:
     process.env.MQTT_CLIENT_ID || `notification-service-${randomUUID()}`,
-  username: config.mqtt.username,
-  password: config.mqtt.password,
+  username: process.env.MQTT_USER,
+  password: process.env.MQTT_PASSWORD,
   clean: true,
   reconnectPeriod: 5000,
+  keepalive: 60,
 });
 
 client.on("error", (err) => {
@@ -24,6 +44,9 @@ client.on("connect", () => {
       console.log("Subscribed to ack/read topics");
     }
   });
+});
+client.on("reconnect", () => {
+  console.log("MQTT reconnecting...");
 });
 client.on("message", async (topic, message) => {
   try {
@@ -41,6 +64,9 @@ client.on("message", async (topic, message) => {
   }
 });
 
+module.exports = client;
+
+///////////////////////////////////////////////////////////////
 async function handleAck(payload) {
   const connection = await pool.getConnection();
 
@@ -89,5 +115,3 @@ async function handleRead(payload) {
     connection.release();
   }
 }
-
-module.exports = client;

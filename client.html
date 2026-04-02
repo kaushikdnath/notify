@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notification Popup Test</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      #notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        z-index: 9999;
+      }
+
+      .notification {
+        background: #ffffff;
+        border-left: 5px solid #007bff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        animation: slideIn 0.3s ease;
+        position: relative;
+      }
+
+      .notification h4 {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+      }
+
+      .notification p {
+        margin: 0;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #999;
+      }
+
+      .close-btn:hover {
+        color: red;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Notification Popup Test Page</h2>
+
+    <div>
+      <label>User ID:</label>
+      <input type="text" id="user_id" value="" />
+      <button onclick="connectMQTT()">Connect</button>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <script>
+      let client;
+      let userId;
+
+      function connectMQTT() {
+        userId = document.getElementById("user_id").value;
+
+        const options = {
+          username: "mosquitto",
+          password: "mosquitto",
+          reconnectPeriod: 5000,
+        };
+
+        client = mqtt.connect("ws://localhost:9001", options);
+
+        client.on("connect", function () {
+          console.log("Connected");
+          client.subscribe("notify/user/" + userId);
+        });
+
+        client.on("message", function (topic, message) {
+          let data = JSON.parse(message.toString());
+          showNotification(data);
+          sendAck(data.id);
+        });
+
+        client.on("error", function (err) {
+          console.error("MQTT Error:", err);
+        });
+      }
+
+      function showNotification(data) {
+        const container = document.getElementById("notification-container");
+
+        const div = document.createElement("div");
+        div.className = "notification";
+        div.setAttribute("data-id", data.id);
+
+        div.innerHTML = `
+        <span class="close-btn">✖</span>
+        <h4>${data.title}</h4>
+        <p>${data.message}</p>
+    `;
+
+        // Click open → READ receipt
+        div.addEventListener("click", function (e) {
+          if (e.target.classList.contains("close-btn")) return;
+          const id = e.currentTarget.dataset.id; // or: this.dataset.id
+          sendRead(id);
+          alert("Notification opened!");
+        });
+
+        // Close button → READ receipt
+        div.querySelector(".close-btn").addEventListener("click", function (e) {
+          e.stopPropagation();
+          const id = this.closest(".notification").dataset.id; // or: this.parentElement.getAttribute('data-id')
+          sendRead(id);
+          div.remove();
+        });
+
+        container.appendChild(div);
+      }
+
+      function sendAck(notificationId) {
+        const payload = {
+          notification_id: notificationId,
+          user_id: userId,
+        };
+
+        client.publish("notify/ack", JSON.stringify(payload));
+        console.log("ACK sent:", payload);
+      }
+
+      function sendRead(notificationId) {
+        const payload = {
+          notification_id: notificationId,
+          user_id: userId,
+        };
+
+        client.publish("notify/read", JSON.stringify(payload));
+        console.log("READ sent:", payload);
+      }
+    </script>
+  </body>
+</html>
