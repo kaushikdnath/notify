@@ -1,0 +1,10 @@
+curl --location 'http://localhost:3000/notify' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "type":"USER",
+    "target":{"user_id":"kaushik","email":"kdebnath56@gmail.com"},
+    
+    "title":"Greating",
+    "messageType":"email",
+    "message": "Hi Kaushik"
+}'
