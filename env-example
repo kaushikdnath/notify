@@ -1,0 +1,26 @@
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=root
+DB_PASSWORD=mysql
+DB_NAME=notifications
+
+BROKER_TYPE=tcp
+MQTT_HOST=localhost
+MQTT_PORT=1883
+MQTT_USE_TLS=false
+# BROKER_TYPE=ws
+# MQTT_HOST=
+# MQTT_PORT=443
+# MQTT_USE_TLS=true
+
+# If using ws/wss
+MQTT_WS_PATH=/mqtt
+
+# MQTT_BROKER_URL=mqtt://localhost:1883
+MQTT_USER=mosquitto
+MQTT_PASSWORD=mosquitto
+
+RESEND_API_KEY=re_yNJHwzc3_BdviLsrxCMtRpw4PcCvMW
+RESEND_FROM_EMAIL=noreply@habshillong.space
