@@ -1,6 +1,7 @@
 const mqtt = require("mqtt");
-const pool = require("../db/pool");
-const config = require("../config");
+// const pool = require("../db/pool");
+const models = require("../db/models");
+// const config = require("../config");
 const { randomUUID } = require("crypto");
 
 function buildBrokerUrl() {
@@ -68,50 +69,26 @@ module.exports = client;
 
 ///////////////////////////////////////////////////////////////
 async function handleAck(payload) {
-  const connection = await pool.getConnection();
-
   try {
-    await connection.query(
-      `UPDATE notification_targets
-       SET status='DELIVERED',
-           delivered_at=NOW()
-       WHERE notification_id=? AND user_id=?`,
-      [payload.notification_id, payload.user_id],
+    await models.updateStatusByNotificationAndUser(
+      payload.notification_id,
+      payload.user_id,
+      "DELIVERED",
+      "delivered_at",
     );
-
-    await connection.query(
-      `INSERT INTO delivery_logs
-       (notification_target_id, event_type)
-       SELECT id, 'DELIVERED'
-       FROM notification_targets
-       WHERE notification_id=? AND user_id=?`,
-      [payload.notification_id, payload.user_id],
-    );
-  } finally {
-    connection.release();
+  } catch (err) {
+    console.error("handleAck error:", err);
   }
 }
 async function handleRead(payload) {
-  const connection = await pool.getConnection();
-
   try {
-    await connection.query(
-      `UPDATE notification_targets
-       SET status='READ',
-           read_at=NOW()
-       WHERE notification_id=? AND user_id=?`,
-      [payload.notification_id, payload.user_id],
+    await models.updateStatusByNotificationAndUser(
+      payload.notification_id,
+      payload.user_id,
+      "READ",
+      "read_at",
     );
-
-    await connection.query(
-      `INSERT INTO delivery_logs
-       (notification_target_id, event_type)
-       SELECT id, 'READ'
-       FROM notification_targets
-       WHERE notification_id=? AND user_id=?`,
-      [payload.notification_id, payload.user_id],
-    );
-  } finally {
-    connection.release();
+  } catch (err) {
+    console.error("handleRead error:", err);
   }
 }

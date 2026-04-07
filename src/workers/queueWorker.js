@@ -4,24 +4,11 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function processQueue() {
-  const connection = await pool.getConnection();
+  // Use model layer to handle DB operations
+  const models = require("../db/models");
 
   try {
-    await connection.beginTransaction();
-
-    const [rows] = await connection.query(
-      `SELECT q.id, q.notification_target_id,
-              nt.user_id, nt.email, nt.mobile,
-              n.id as notification_id,
-              n.title, n.message, n.payload_json, n.message_type
-       FROM notification_queue q
-       JOIN notification_targets nt ON q.notification_target_id = nt.id
-       JOIN notifications n ON nt.notification_id = n.id
-       WHERE q.status='PENDING'
-       AND q.next_attempt_at <= NOW()
-       LIMIT 20
-       FOR UPDATE SKIP LOCKED`,
-    );
+    const rows = await models.selectPendingQueue(20);
 
     for (const row of rows) {
       try {
@@ -34,43 +21,18 @@ async function processQueue() {
         } else if (row.message_type === "sms") {
           response = await sendSMS(row);
         }
-        await connection.query(
-          `UPDATE notification_targets
-           SET status='SENT', last_attempt_at=NOW(),external_id=?
-           WHERE id=?`,
-          [response, row.notification_target_id],
-        );
 
-        await connection.query(`DELETE FROM notification_queue WHERE id=?`, [
-          row.id,
-        ]);
+        await models.markTargetSent(row.notification_target_id, response);
+        await models.deleteQueue(row.id);
       } catch (err) {
         console.error("Send failed:", err.message);
 
-        //  retry logic
-        await connection.query(
-          `UPDATE notification_targets
-           SET retry_count = retry_count + 1,
-               last_attempt_at = NOW()
-           WHERE id=?`,
-          [row.notification_target_id],
-        );
-
-        await connection.query(
-          `UPDATE notification_queue
-           SET next_attempt_at = DATE_ADD(NOW(), INTERVAL 1 MINUTE)
-           WHERE id=?`,
-          [row.id],
-        );
+        await models.incrementRetry(row.notification_target_id);
+        await models.postponeQueue(row.id);
       }
     }
-
-    await connection.commit();
   } catch (err) {
-    await connection.rollback();
     console.error("Worker error:", err);
-  } finally {
-    connection.release();
   }
 }
 

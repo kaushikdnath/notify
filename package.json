@@ -5,6 +5,7 @@
   "scripts": {
     "worker": "node src/worker.js",
     "notify": "node src/server.js",
+    "init-db": "node src/db/init.js",
     "worker dev": "nodemon src/worker.js",
     "notify dev": "nodemon src/server.js",
     "dev": "concurrently \"nodemon src/server.js\" \"nodemon src/worker.js\""
@@ -14,11 +15,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "better-sqlite3": "^12.8.0",
     "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.2",
     "fastify": "^5.7.4",
     "js-yaml": "^4.1.1",
     "mqtt": "^5.15.0",
-    "mysql2": "^3.17.1",
+    "mysql2": "^3.20.0",
     "resend": "^6.10.0",
     "uuid": "^13.0.0"
   },

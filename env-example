@@ -1,10 +1,12 @@
 PORT=3000
 
+DB_TYPE=mysql
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=root
 DB_PASSWORD=mysql
 DB_NAME=notifications
+SQLITE_FILE=./data.db
 
 BROKER_TYPE=tcp
 MQTT_HOST=localhost

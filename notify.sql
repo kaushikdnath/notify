@@ -1,23 +1,7 @@
-/*
-SQLyog Community
-MySQL - 8.0.39 : Database - notifications
-*********************************************************************
-*/
-
-/*!40101 SET NAMES utf8 */;
-
-/*!40101 SET SQL_MODE=''*/;
-
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-/*Table structure for table `delivery_logs` */
-
 DROP TABLE IF EXISTS `delivery_logs`;
 
 CREATE TABLE `delivery_logs` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+  `id` varchar(36) NOT NULL,
   `notification_target_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `event_type` enum('SENT','DELIVERED','READ','FAILED') NOT NULL,
   `event_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
