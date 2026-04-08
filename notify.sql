@@ -62,7 +62,7 @@ CREATE TABLE `notifications` (
   `priority` enum('LOW','NORMAL','HIGH','CRITICAL') DEFAULT 'NORMAL',
   `created_by_service` varchar(100) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
