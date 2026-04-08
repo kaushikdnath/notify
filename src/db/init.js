@@ -30,6 +30,7 @@ function postgresCreateStatement(raw) {
   s = s.replace(/CHARACTER SET\s+\w+(\s+COLLATE\s+\w+)?/gi, "");
   s = s.replace(/COLLATE\s+\w+/gi, "");
   s = s.replace(/`/g, "");
+  s = s.replace(/^\s*(UNIQUE\s+KEY|KEY|INDEX|FULLTEXT|SPATIAL).*$/gim, "");
 
   // ENUM → TEXT
   s = s.replace(/\benum\s*\([^\)]*\)/gi, "TEXT");
@@ -149,7 +150,7 @@ async function initDb() {
 
   const dbType = process.env.DB_TYPE || "mysql";
 
-  const conn = await pool.getConnection();
+  // const conn = await pool.getConnection();
   try {
     for (const name of order) {
       const t = tables[name];
@@ -167,13 +168,13 @@ async function initDb() {
         stmt = postgresCreateStatement(stmt);
       }
 
-      console.log(`Creating table if not exists: ${name}`);
-      try {
-        await conn.query(stmt);
-        console.log(`OK: ${name}`);
-      } catch (err) {
-        console.error(`Failed to create ${name}:`, err.message);
-      }
+      console.info(`Creating table if not exists: ${name}`, stmt);
+      // try {
+      //   await conn.query(stmt);
+      //   console.log(`OK: ${name}`);
+      // } catch (err) {
+      //   console.error(`Failed to create ${name}:`, err.message);
+      // }
     }
   } finally {
     try {
