@@ -19,9 +19,19 @@ function sanitizeBind(v) {
   }
 }
 
+function convertPlaceholders(sql) {
+  if (process.env.DB_TYPE !== "supabase") return sql;
+
+  let index = 0;
+  return sql.replace(/\?/g, () => `$${++index}`);
+}
+
 async function execQuery(conn, sql, params = []) {
   const safe = (params || []).map(sanitizeBind);
-  return conn.query(sql, safe);
+
+  const finalSql = convertPlaceholders(sql);
+
+  return conn.query(finalSql, safe);
 }
 
 module.exports = {
