@@ -150,7 +150,7 @@ async function initDb() {
 
   const dbType = process.env.DB_TYPE || "mysql";
 
-  // const conn = await pool.getConnection();
+  const conn = await pool.getConnection();
   try {
     for (const name of order) {
       const t = tables[name];
@@ -169,12 +169,12 @@ async function initDb() {
       }
 
       console.info(`Creating table if not exists: ${name}`, stmt);
-      // try {
-      //   await conn.query(stmt);
-      //   console.log(`OK: ${name}`);
-      // } catch (err) {
-      //   console.error(`Failed to create ${name}:`, err.message);
-      // }
+      try {
+        await conn.query(stmt);
+        console.log(`OK: ${name}`);
+      } catch (err) {
+        console.error(`Failed to create ${name}:`, err.message);
+      }
     }
   } finally {
     try {
