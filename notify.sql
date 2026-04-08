@@ -7,7 +7,6 @@ CREATE TABLE `delivery_logs` (
   `event_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `metadata` json DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_target_event` (`notification_target_id`,`event_type`),
   CONSTRAINT `delivery_logs_ibfk_1` FOREIGN KEY (`notification_target_id`) REFERENCES `notification_targets` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -23,8 +22,6 @@ CREATE TABLE `notification_queue` (
   `status` enum('PENDING','PROCESSING','FAILED') DEFAULT 'PENDING',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_next_attempt` (`next_attempt_at`,`status`),
-  KEY `notification_queue_ibfk_1` (`notification_target_id`),
   CONSTRAINT `notification_queue_ibfk_1` FOREIGN KEY (`notification_target_id`) REFERENCES `notification_targets` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -47,9 +44,6 @@ CREATE TABLE `notification_targets` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_notification_user` (`notification_id`,`user_id`),
-  KEY `idx_user_status` (`user_id`,`status`),
-  KEY `idx_status_retry` (`status`,`retry_count`),
-  KEY `idx_notification_id` (`notification_id`),
   CONSTRAINT `notification_targets_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -69,8 +63,6 @@ CREATE TABLE `notifications` (
   `created_by_service` varchar(100) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_created_at` (`created_at`),
-  KEY `idx_type_target` (`type`,`target`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

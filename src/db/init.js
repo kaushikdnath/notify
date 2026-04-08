@@ -21,7 +21,39 @@ function mysqlCreateStatement(raw) {
   // convert CREATE TABLE ... to CREATE TABLE IF NOT EXISTS ...
   return raw.replace(/CREATE TABLE/i, "CREATE TABLE IF NOT EXISTS");
 }
+function postgresCreateStatement(raw) {
+  let s = raw;
 
+  // remove MySQL-specific stuff
+  s = s.replace(/ENGINE=\w+[^;]*/gi, "");
+  s = s.replace(/DEFAULT CHARSET=[^;]*/gi, "");
+  s = s.replace(/CHARACTER SET\s+\w+(\s+COLLATE\s+\w+)?/gi, "");
+  s = s.replace(/COLLATE\s+\w+/gi, "");
+  s = s.replace(/`/g, "");
+
+  // ENUM → TEXT
+  s = s.replace(/\benum\s*\([^\)]*\)/gi, "TEXT");
+
+  // JSON → JSONB
+  s = s.replace(/\bjson\b/gi, "JSONB");
+
+  // AUTO_INCREMENT → nothing (you are using UUID anyway)
+  s = s.replace(/AUTO_INCREMENT/gi, "");
+
+  // KEY → INDEX
+  s = s.replace(
+    /\bKEY\s+([^\(]+)\(([^\)]+)\)/gi,
+    "CREATE INDEX $1 ON $TABLE$ ($2)",
+  );
+
+  // remove MySQL-specific KEY lines (simpler approach)
+  s = s.replace(/^\s*KEY.*$/gim, "");
+
+  // convert CREATE TABLE
+  s = s.replace(/CREATE TABLE/i, "CREATE TABLE IF NOT EXISTS");
+
+  return s;
+}
 function sqliteCreateStatement(name, raw) {
   // Build a SQLite-friendly CREATE statement by parsing the column list
   let s = raw;
@@ -131,6 +163,8 @@ async function initDb() {
         stmt = mysqlCreateStatement(stmt);
       } else if (dbType === "sqlite") {
         stmt = sqliteCreateStatement(name, stmt);
+      } else if (dbType === "supabase") {
+        stmt = postgresCreateStatement(stmt);
       }
 
       console.log(`Creating table if not exists: ${name}`);

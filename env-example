@@ -1,19 +1,23 @@
 PORT=3000
 
-DB_TYPE=mysql
+# DB_TYPE=mysql
+# DB_TYPE=sqlite
+DB_TYPE=supabase
+
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=root
 DB_PASSWORD=mysql
 DB_NAME=notifications
 SQLITE_FILE=./data.db
+SUPABASE_DB_URL=postgresql://postgres:mthrsa@db.pnrackclrmdxrebfezie.supabase.co:5432/notifications
 
 BROKER_TYPE=tcp
 MQTT_HOST=localhost
 MQTT_PORT=1883
 MQTT_USE_TLS=false
 # BROKER_TYPE=ws
-# MQTT_HOST=
+# MQTT_HOST=notify.habshillong.space
 # MQTT_PORT=443
 # MQTT_USE_TLS=true
 
@@ -24,5 +28,5 @@ MQTT_WS_PATH=/mqtt
 MQTT_USER=mosquitto
 MQTT_PASSWORD=mosquitto
 
-RESEND_API_KEY=re_yNJHwzc3_BdviLsrxCMtRpw4PcCvMW
+RESEND_API_KEY=re_yNJHwzc3_BdviLsrxCMtRpw4PcCvMWNpJ
 RESEND_FROM_EMAIL=noreply@habshillong.space

@@ -7,7 +7,10 @@ function sanitizeBind(v) {
   if (Buffer.isBuffer && Buffer.isBuffer(v)) return v;
   const t = typeof v;
   if (t === "string" || t === "number" || t === "bigint") return v;
-  if (t === "boolean") return v ? 1 : 0;
+  if (t === "boolean") {
+    return process.env.DB_TYPE == "supabase" ? v : v ? 1 : 0;
+  }
+
   // objects -> JSON string
   try {
     return JSON.stringify(v);
@@ -66,7 +69,7 @@ module.exports = {
     try {
       const sql = `INSERT INTO notification_queue
         (id, notification_target_id, next_attempt_at)
-        VALUES (?, ?, ${process.env.DB_TYPE === "mysql" ? "NOW()" : "datetime('now')"})`;
+        VALUES (?, ?, ${process.env.DB_TYPE === "sqlite" ? "datetime('now')" : "NOW()"})`;
       await execQuery(conn, sql, [obj.id, obj.notification_target_id]);
     } finally {
       conn.release();
@@ -95,7 +98,7 @@ module.exports = {
        JOIN notification_targets nt ON q.notification_target_id = nt.id
        JOIN notifications n ON nt.notification_id = n.id
        WHERE q.status='PENDING'
-       AND q.next_attempt_at <= ${process.env.DB_TYPE === "mysql" ? "NOW()" : "datetime('now')"}
+       AND q.next_attempt_at <= ${process.env.DB_TYPE === "sqlite" ? "datetime('now')" : "NOW()"}
        LIMIT ? ` +
         (process.env.DB_TYPE === "mysql" ? " FOR UPDATE SKIP LOCKED" : "");
 
@@ -110,7 +113,7 @@ module.exports = {
     const conn = await pool.getConnection();
     try {
       const sql = `UPDATE notification_targets
-           SET status='SENT', last_attempt_at=${process.env.DB_TYPE === "mysql" ? "NOW()" : "datetime('now')"}, external_id=?
+           SET status='SENT', last_attempt_at=${process.env.DB_TYPE === "sqlite" ? "datetime('now')" : "NOW()"}, external_id=?
            WHERE id=?`;
       await execQuery(conn, sql, [externalId, id]);
     } finally {
@@ -132,7 +135,7 @@ module.exports = {
     try {
       const sql = `UPDATE notification_targets
            SET retry_count = retry_count + 1,
-               last_attempt_at = ${process.env.DB_TYPE === "mysql" ? "NOW()" : "datetime('now')"}
+               last_attempt_at = ${process.env.DB_TYPE === "sqlite" ? "datetime('now')" : "NOW()"}
            WHERE id=?`;
       await execQuery(conn, sql, [id]);
     } finally {
@@ -144,7 +147,13 @@ module.exports = {
     const conn = await pool.getConnection();
     try {
       const sql = `UPDATE notification_queue
-           SET next_attempt_at = ${process.env.DB_TYPE === "mysql" ? "DATE_ADD(NOW(), INTERVAL 1 MINUTE)" : "datetime('now', '+1 minute')"}
+           SET next_attempt_at = ${
+             process.env.DB_TYPE === "mysql"
+               ? "DATE_ADD(NOW(), INTERVAL 1 MINUTE)"
+               : process.env.DB_TYPE === "sqlite"
+                 ? "datetime('now', '+1 minute')"
+                 : "NOW() + INTERVAL '1 minute'"
+           }
            WHERE id=?`;
       await execQuery(conn, sql, [id]);
     } finally {
@@ -204,7 +213,7 @@ module.exports = {
     const conn = await pool.getConnection();
     try {
       const sql = `UPDATE notification_targets
-       SET status='${status}', ${timeCol}=${process.env.DB_TYPE === "mysql" ? "NOW()" : "datetime('now')"}
+       SET status='${status}', ${timeCol}=${process.env.DB_TYPE === "sqlite" ? "datetime('now')" : "NOW()"}
        WHERE notification_id=? AND user_id=?`;
       await execQuery(conn, sql, [notificationId, userId]);
 
